@@ -18,6 +18,7 @@ public class Candidate {
     private ArrayList <Round> rounds;
     private Transfer[] transfers;
     private boolean active;
+    private boolean willBeExcluded;
     private int position;
 
     public Candidate(int canID, String constituency, String name, String gender, String party,int votes){
@@ -28,6 +29,7 @@ public class Candidate {
         this.votes = votes;
         this.party=party;
         rounds = new ArrayList<>();
+        willBeExcluded = false;
     }
 
     public Candidate(int canID, int conID, String name, int pid, String gender, int votes) {
@@ -39,6 +41,7 @@ public class Candidate {
         this.votes = votes;
         active = true;
         rounds = new ArrayList<>();
+        willBeExcluded = false;
     }
 
     public int getCanid(){return canID;}
@@ -93,7 +96,7 @@ public class Candidate {
                 found = true;
                 id = i;
             }
-            //System.out.println(constituency + " Eqauls " + constituencies[i] + " : " + found);
+            //System.out.println(constituency + " Equals " + constituencies[i] + " : " + found);
         }
         conID = id;
         //System.out.println(conid);
@@ -102,6 +105,7 @@ public class Candidate {
     public void createTransfers(int number){
         transfers = new Transfer[number];
     }
+
     public Transfer getTransfer (int i ){
         return transfers[i];
     }
@@ -113,6 +117,10 @@ public class Candidate {
     public void makeInactive(){
         active = false;
         votes = 0;
+    }
+
+    public boolean isToBeExcluded(){
+        return willBeExcluded;
     }
 
 

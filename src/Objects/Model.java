@@ -2,19 +2,17 @@ package Objects;
 
 import java.util.ArrayList;
 
-public class Model {
+public class Model{
     public Constituency constituency;
     private ArrayList<Candidate> allCandidates;
-    private ArrayList<Candidate> currentCandidates;
+    ArrayList<Candidate> currentCandidates;
     private ArrayList<ArrayList<Round>> rounds;
     private Transfer[][] transfers;
-    private int totalRounds;
 
     public Model (Constituency constituency){
         this.constituency = constituency;
         allCandidates = new ArrayList<Candidate>();
         rounds = new ArrayList<ArrayList<Round>>();
-
     }
 
     public void addCandidate(Candidate candidate){
@@ -48,7 +46,7 @@ public class Model {
     }
 
     public void calculateTransfers(){
-        int round =0;
+        /*int round =0;
         int elected =0;
         int overflow;
         int total;
@@ -62,7 +60,10 @@ public class Model {
 
         setPositions();
 
-        while (constituency.getSeats()!=elected){
+        System.out.println("The number of rounds is " + totalRounds);
+
+//        while (constituency.getSeats()!=elected){
+        while (round!=totalRounds){
             currentCandidates = sortCandidates(currentCandidates);
             redistributeCandidates = new ArrayList<>();
             triggered = false;
@@ -123,7 +124,7 @@ public class Model {
         }
 
 
-        printTransfers();
+        printTransfers();*/
     }
 
 
@@ -237,7 +238,7 @@ public class Model {
 //        }
 //        return count;
 //    }
-    
+//
 //    private int setRoundLimit(){
 //        int highest =0;
 //        for (int i =0; i < rounds.size();i++) {
@@ -295,6 +296,5 @@ public class Model {
         for (int i =0;i < currentCandidates.size(); i++){
             currentCandidates.get(i).setPosition(i);
         }
-
     }
 }

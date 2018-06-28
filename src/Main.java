@@ -12,12 +12,12 @@ import java.util.ArrayList;
 public class Main {
     public static void main(String args[]) throws FileNotFoundException {
 //        createDatabase();
-        readDatabase();
+//        readDatabase();
     }
 
     private static void readDatabase() {
         DBReader reader = new DBReader();
-        reader.readConstituency("Limerick City");
+        reader.readConstituency("Laois");
         Model model = reader.getModel();
 //        model.printAll();
         model.calculateTransfers();
