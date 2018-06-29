@@ -92,6 +92,7 @@ public class DBReader {
 
 //                    System.out.println("RID: " + RID + "Candidate ID: " + CanID + " conID: " + conID + " votes: " + votes + "Number: " + number + " Status: " + status);
                     round = new Round(RID, CanID, ConID, votes, number, status);
+//                    System.out.println("Adding round " + i);
                     model.addRound(i, round);
                 }
             }

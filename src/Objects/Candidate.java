@@ -61,6 +61,9 @@ public class Candidate {
     public Round getRound(int i){
         return rounds.get(i);
     }
+    public ArrayList<Round> getRounds(){
+        return rounds;
+    }
     public void addRound(Round round){
         rounds.add(round);
     }

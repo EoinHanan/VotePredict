@@ -33,6 +33,7 @@ public class Transfer {
     }
     public void setPercentage(double percentage){
         this.percentage = percentage;
+        found = true;
     }
     public boolean isFound(){
         return found;

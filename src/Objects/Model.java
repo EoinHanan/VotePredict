@@ -1,258 +1,128 @@
 package Objects;
 
+import Printer.CSVPrinter;
+
+import java.awt.*;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 public class Model{
     public Constituency constituency;
-    private ArrayList<Candidate> allCandidates;
-    ArrayList<Candidate> currentCandidates;
-    private ArrayList<ArrayList<Round>> rounds;
+    private ArrayList<Candidate> candidates;
+    private ArrayList<CurrentCandidate> currentCandidates;
     private Transfer[][] transfers;
+    private int quota;
 
     public Model (Constituency constituency){
         this.constituency = constituency;
-        allCandidates = new ArrayList<Candidate>();
-        rounds = new ArrayList<ArrayList<Round>>();
+        candidates = new ArrayList<Candidate>();
+        quota = (int)(Math.ceil((constituency.getPoll2016() - constituency.getSpoiled2016()) / (constituency.getSeats() + 1)) + 1);
+        System.out.println("Quota is " + quota);
     }
 
     public void addCandidate(Candidate candidate){
-        allCandidates.add(candidate);
-        rounds.add(new ArrayList<Round>());
+        candidates.add(candidate);
     }
 
     public void addRound(int i, Round round){
-        allCandidates.get(i).addRound(round);
+        candidates.get(i).addRound(round);
     }
 
     public int getCandidatesSize(){
-        return allCandidates.size();
+        return candidates.size();
     }
 
     public Candidate getCandidate(int i ){
-        return allCandidates.get(i);
+        return candidates.get(i);
     }
 
     public void printAll(){
         System.out.println("Constituency: " + constituency.getName() + "\n");
 
-        for (int i =0; i < allCandidates.size();i++) {
-            System.out.println("\nCandidate " + i + " : " + allCandidates.get(i).getName());
+        for (int i =0; i < candidates.size();i++) {
+            System.out.println("\nCandidate " + i + " : " + candidates.get(i).getName());
 
-
-            for (int j =0; j < rounds.get(i).size();j++)
-                System.out.println("Round "+ rounds.get(i).get(j).getNumber() + ": "  + rounds.get(i).get(j).getVotes());
+            ArrayList <Round> rounds = candidates.get(i).getRounds();
+            for (int j =0; j < rounds.size();j++)
+                System.out.println("Round "+ rounds.get(j).getNumber() + ": "  + rounds.get(j).getVotes());
         }
 
     }
 
-    public void calculateTransfers(){
-        /*int round =0;
-        int elected =0;
-        int overflow;
-        int total;
-//        totalRounds = setRoundLimit();
-        int quota = (int)(Math.ceil((constituency.getPoll2016() - constituency.getSpoiled2016() )/ (constituency.getSeats() + 1))) + 1;
-        System.out.println("Quota: " + quota);
-        boolean triggered;
-        currentCandidates = (ArrayList<Candidate>)allCandidates.clone();
-        ArrayList<Candidate> redistributeCandidates;
+    public void calculateTransfers() throws FileNotFoundException {
+        //Setup
+
+        //Setup up rounds
+        int round = 0;
+        int totalRounds = candidates.get(0).getRounds().size();
+        boolean finalRound = false;
+
         createTransfers();
+
+        System.out.println("There are " + candidates.size() + " Candidates");
+        System.out.println("There are " + totalRounds + " rounds");
+
+        //Set up Current Candidates
+        currentCandidates = new ArrayList<>();
+        for (int i =0; i < candidates.size();i++)
+            currentCandidates.add(new CurrentCandidate(candidates.get(i)));
 
         setPositions();
 
-        System.out.println("The number of rounds is " + totalRounds);
+        ArrayList <CurrentCandidate> transferFrom;
+        ArrayList <CurrentCandidate> transferTo;
+        //Set up transfers
 
-//        while (constituency.getSeats()!=elected){
-        while (round!=totalRounds){
-            currentCandidates = sortCandidates(currentCandidates);
-            redistributeCandidates = new ArrayList<>();
-            triggered = false;
-            total = 0;
-            System.out.println("\nRound " + (round + 1));
-            overflow = 0;
+        while (round != totalRounds){
+            if (round== totalRounds - 2)
+                finalRound = true;
+            // Set up for  round
+            for (int i =0;  i < currentCandidates.size();i++)
+                currentCandidates.get(i).setInfo(round, finalRound);
 
-            //Check to see if above quota (ie elected)
-            for (int i = 0; i < currentCandidates.size();i++){
-                if (currentCandidates.get(i).getVotes() >= quota) {
-                    elected++;
-                    overflow += currentCandidates.get(i).getVotes() - quota;
-                    System.out.println(currentCandidates.get(i).getName() + " was elected to seat " + elected);
+            System.out.println("\nStarting round " + (round + 1));
 
-                    redistributeCandidates.add(currentCandidates.get(i));
-                    currentCandidates.remove(i);
-                    i--;
-                    triggered = true;
-                }
-            }
+            transferFrom = new ArrayList<>();
+            transferTo = new ArrayList<>();
 
-            //Check to see if minimum amount of candidates left
-            if(currentCandidates.size() + elected == constituency.getSeats() + 1){
-                int count = currentCandidates.size() - 1;
-                System.out.println("Count = "+ count);
-
-                for (int j = count; j > 0; j--){
-                    elected++;
-                    System.out.println(currentCandidates.get(j).getName() + " was elected to seat " + elected);
-                    currentCandidates.remove(j);
-                }
-                System.out.println(currentCandidates.get(0).getName() + " was excluded");
-                triggered = true;
-            }
-
-            //Exclude Candidates (ie with the fewest votes)
-
-            if (currentCandidates.size() > 1) {
-                int count = getBottom(currentCandidates, overflow, (constituency.getSeats() - elected));
-                if (count > 0)
-                    for (int i = count - 1; i >= 0; i--) {
-                        System.out.println(currentCandidates.get(i).getName() + " was excluded");
-                        redistributeCandidates.add(currentCandidates.get(i));
-                        overflow+= currentCandidates.get(i).getVotes();
-                        currentCandidates.remove(i);
-                    }
-            }
-
-            round++;
-            if (constituency.getSeats()!=elected)
-                currentCandidates = updateVotes(currentCandidates, round);
-
-            //If so redistribute those votes
-            redistributeVotes(currentCandidates, redistributeCandidates, overflow);
-
-            if (round > 100)
-                System.exit(0);
-        }
-
-
-        printTransfers();*/
-    }
-
-
-    public void signalElected(int round, int candidate){
-        int total = rounds.get(candidate).get(round).getVotes() - (int)(Math.ceil(constituency.getPoll2016()/(constituency.getSeats() + 1)));
-        //System.out.println("Candidate:"+ rounds.get(candidate).get(round).getVotes()+ " Number of seats: " + constituency.getSeats() + " Valid polls " + constituency.getPoll2016());
-        System.out.println("Elected, Total transfer for " + allCandidates.get(candidate).getName() + " = " + total);
-    }
-
-    public void signalExcluded(int round, int candidate){
-        int total = rounds.get(candidate).get(round).getVotes();
-        System.out.println("Excluded, Total transfer for " + allCandidates.get(candidate).getName() + " = " + total);
-    }
-
-    public ArrayList<Candidate> updateVotes(ArrayList<Candidate> candidates, int round){
-
-        for (int i =0; i < candidates.size(); i++) {
-            System.out.println("Checking " + candidates.get(i).getName());
-            candidates.get(i).setVotes(candidates.get(i).getRound(round).getVotes());
-//            System.out.println(candidates.get(i).getName() + " " + candidates.get(i).getVotes());
-        }
-        return candidates;
-    }
-
-    public ArrayList<Candidate> sortCandidates(ArrayList<Candidate> candidates){
-        Candidate spare;
-
-        for (int i =0; i < candidates.size();i++)
-        {
-            for (int j = 0; j < candidates.size() - 1 - i;j++)
-                if (candidates.get(j).getVotes() > candidates.get(j + 1).getVotes()) {
-                    spare = candidates.get(j);
-                    candidates.set(j, candidates.get(j + 1));
-                    candidates.set(j + 1, spare);
-                }
-        }
-
-
-        return candidates;
-    }
-
-    private int getBottom(ArrayList<Candidate> candidates, int overflow, int seats){
-        boolean valid;
-        int potentialOverflow;
-
-        Candidate[] currentCandidates = new Candidate[candidates.size()];
-
-        for (int i =0; i < currentCandidates.length; i++){
-            currentCandidates[i] = candidates.get(i);
-        }
-//        System.out.println("Base Overflow: " + overflow);
-        for (int i = currentCandidates.length - seats; i >= 0; i--){
-            valid = false;
-            potentialOverflow = overflow;
-
-
-            if (i > 0) {
-                for (int j = i - 1; j >= 0 && !valid; j--) {
-//                    System.out.println("Overflow before = " + potentialOverflow);
-                    potentialOverflow += currentCandidates[j].getVotes();
-////                    System.out.println("Potential overflow for " + currentCandidates[i].getName() + " " + i + " :" + potentialOverflow + " number to beat: " + currentCandidates[i].getVotes());
-//                    System.out.println("Checking " + currentCandidates[j].getName());
-//                    System.out.println("Potential overflow: " + potentialOverflow );
-//                    System.out.println("To beat: " + currentCandidates[i].getVotes() );
-
-                    if (potentialOverflow > currentCandidates[i].getVotes()) {
-//                        System.out.println("Beaten\n");
-                        valid = true;
-                    }
-                }
-            }
-            else {
-                potentialOverflow += currentCandidates[i].getVotes();
-                System.out.println("Potential overflow: " + potentialOverflow );
-                System.out.println("To beat: " + currentCandidates[i + 1].getVotes() );
-                if (potentialOverflow > currentCandidates[i].getVotes()) {
-//                    System.out.println("Beaten\n");
-                    valid = true;
-                }
-            }
-
-            if (!valid)
-                return i;
-        }
-
-
-        System.out.println("Returning 0");
-        return 0;
-    }
-
-//    public int getBottom(ArrayList<Candidate> candidates ,int overflow){
-//        System.out.println("Overflow is " + overflow);
-//
-//        if (overflow + candidates.get(0).getVotes() > candidates.get(1).getVotes())
-//        {
-//            return 0;
-//        }
-//        int count = 1;
-//
-//        int total = candidates.get(0).getVotes() + overflow;
-//        System.out.println("Overflow total " + (total) + " next total " + candidates.get(1).getVotes());
-//
-//        for (int i =1; i < candidates.size() - 1;i++) {
-//            System.out.println("Overflow total " + (total + candidates.get(i).getVotes()) + " next total " + candidates.get(i + 1).getVotes());
-//            if (total + candidates.get(i).getVotes() < candidates.get(i + 1).getVotes()) {
-//                count = i;
-//                total += candidates.get(i).getVotes();
+            //Print current status of all candidates
+//            for (int i =0; i < currentCandidates.size();i++){
+//                System.out.println(currentCandidates.get(i).getName() + " " + currentCandidates.get(i).willBeRemoved() + " " + currentCandidates.get(i).isRemoved() + " " + currentCandidates.get(i).getCurrentVotes() + " " + currentCandidates.get(i).getNextVotes());
 //            }
-//                else
-//                        break;
-//        }
-//        return count;
-//    }
-//
-//    private int setRoundLimit(){
-//        int highest =0;
-//        for (int i =0; i < rounds.size();i++) {
-//            if (rounds.get(i).size() > highest)
-//                highest = rounds.get(i).size();
-//        }
-//        return highest;
-//    }
+
+
+            //Make an arraylist of candidates that will be removed
+            for (int i =0; i < currentCandidates.size(); i++){
+                if (currentCandidates.get(i).willBeRemoved() && !currentCandidates.get(i).isRemoved())
+                   transferFrom.add(currentCandidates.get(i));
+                else if (!currentCandidates.get(i).willBeRemoved())
+                   transferTo.add(currentCandidates.get(i));
+            }
+
+            //Work out the amount of votes that will be redistributed
+            for (int i =0; i < transferFrom.size();i++)
+                transferFrom.get(i).setElected(aboveQuota(transferFrom.get(i)));
+
+            //Create transfers from this
+            setTransfers(transferFrom,transferTo);
+
+            //Increment round
+            round++;
+        }
+
+        //Print Transfers
+        printTransfers();
+
+//        CSVPrinter printer = new CSVPrinter (transfers, candidates,constituency.getName());
+//        printer.print();
+
+    }
 
     private void createTransfers() {
-        transfers = new Transfer[allCandidates.size()][allCandidates.size()];
-        for (int i =0 ; i < allCandidates.size();i++){
-            for (int j =0;  j < allCandidates.size();j++){
-                Transfer transfer = new Transfer(allCandidates.get(i).getCanid(),allCandidates.get(j).getCanid());
+        transfers = new Transfer[candidates.size()][candidates.size()];
+        for (int i =0 ; i < candidates.size();i++){
+            for (int j =0;  j < candidates.size();j++){
+                Transfer transfer = new Transfer(candidates.get(i).getCanid(),candidates.get(j).getCanid());
                 transfers[i][j] = transfer;
             }
         }
@@ -261,15 +131,15 @@ public class Model{
     private void printTransfers(){
         System.out.print("\t\t\t");
 
-        for (int i =0; i < allCandidates.size(); i++)
-            System.out.print(allCandidates.get(i).getName().substring(0,8) + "\t");
+        for (int i =0; i < candidates.size(); i++)
+            System.out.print(candidates.get(i).getName().substring(0,8) + "\t");
         System.out.println();
         for (int i =0; i < transfers.length;i++) {
             for (int j = -1; j < transfers[i].length; j++) {
                 if (j == -1)
-                    System.out.print(allCandidates.get(i).getName().substring(0,8)+ "\t");
+                    System.out.print(candidates.get(i).getName().substring(0,8)+ "\t");
                 else
-                    System.out.print(transfers[i][j].getPercentage() + "\t\t\t");
+                    System.out.print(clean(transfers[i][j].getPercentage()) + "\t\t\t");
             }
             System.out.println();
         }
@@ -277,7 +147,6 @@ public class Model{
     }
 
     public void redistributeVotes(ArrayList <Candidate> currentCandidates, ArrayList <Candidate> candidatesToRedistribute, double total){
-//        transfers[12][10].setPercentage(1);
         double percentage;
 
         for (int i =0; i < candidatesToRedistribute.size();i++){
@@ -292,9 +161,51 @@ public class Model{
         }
     }
 
+    private boolean aboveQuota(CurrentCandidate candidate){
+        return candidate.getCurrentVotes() >= quota;
+    }
+
     public void setPositions(){
         for (int i =0;i < currentCandidates.size(); i++){
             currentCandidates.get(i).setPosition(i);
         }
+    }
+
+    private void setTransfers(ArrayList<CurrentCandidate> from, ArrayList<CurrentCandidate> to){
+        double redistribution = 0;
+        double difference[] = new double [to.size()];
+
+        System.out.println("There are " + from.size() + " candidates transferring and there are " + to.size() + " candidates left");
+
+        for (int i =0; i < from.size(); i++) {
+            if (from.get(i).wasElected())
+                redistribution += from.get(i).getCurrentVotes() - quota;
+            else
+                redistribution += from.get(i).getCurrentVotes();
+        }
+
+        System.out.println("Redistribution = " + redistribution);
+
+        System.out.println("Transfers is a " + transfers.length + " * " + transfers[0].length);
+
+        for (int i = 0; i < to.size();i++ ) {
+            difference[i] = to.get(i).getNextVotes() - to.get(i).getCurrentVotes();
+            System.out.println("Difference is " + difference[i]);
+        }
+
+        for (int i =0 ; i < from.size(); i++) {
+            for (int j = 0; j < to.size(); j++) {
+                System.out.println("From: " + from.get(i).getPosition() + " To: " + to.get(j).getPosition() + " with the difference " + (difference[j]/redistribution));
+                transfers[from.get(i).getPosition()][to.get(j).getPosition()].setPercentage(difference[j]/redistribution);
+            }
+        }
+
+    }
+
+    public double clean(double number){
+        number = number * 1000;
+        number = Math.round(number);
+        number = number /10;
+        return number;
     }
 }
