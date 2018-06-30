@@ -26,11 +26,11 @@ public class ConstituencyReader extends Reader {
         if (file.exists()) {
             //System.out.println("Inside file");
             in = new Scanner(file);
-            in.useDelimiter(";");
+            in.useDelimiter(",");
 
             while (in.hasNextLine()){
                 line = in.nextLine();
-                elements = line.split(";");
+                elements = line.split(",");
                 constituencies.add(new Constituency(elements[0],Integer.parseInt(elements[1]),Integer.parseInt(elements[2]),Integer.parseInt(elements[3]),Integer.parseInt(elements[4]),Integer.parseInt(elements[5])));
                 //System.out.println(line);
             }

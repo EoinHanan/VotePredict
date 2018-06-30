@@ -24,13 +24,14 @@ public class CandidateReader extends Reader {
         candidates = new ArrayList<Candidate>();
 
         if (file.exists()) {
-            //System.out.println("Inside file");
+            System.out.println("Inside file");
             in = new Scanner(file);
-            in.useDelimiter(";");
+            in.useDelimiter(",");
             int i =0;
             while (in.hasNextLine()){
                 line = in.nextLine();
-                elements = line.split(";");
+                elements = line.split(",");
+//                System.out.println("Creating " + elements[1]);
                 candidates.add(new Candidate(i,elements[0],elements[1],elements[2],elements[3],Integer.parseInt(elements[4])));
                // System.out.println(i + line);
                 i++;

@@ -5,10 +5,8 @@ import Objects.Constituency;
 import Objects.Model;
 import Objects.Round;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 
 /**
  * Created by EoinH on 17/10/2017.
@@ -18,6 +16,8 @@ public class DBReader {
     private Statement statement;
     private ResultSet resultSet;
     private Model model;
+    private ArrayList<String> constituencyNames;
+
     public DBReader(){
         try{
             Class.forName("com.mysql.jdbc.Driver");
@@ -100,6 +100,27 @@ public class DBReader {
         }catch(Exception ex){
             System.out.println(ex);
         }
+    }
+
+    public ArrayList <String> getConstituencyNames() throws SQLException {
+        constituencyNames = new ArrayList<>();
+        String query;
+
+        query = "SELECT `Name` FROM `constituencies`";
+
+        resultSet = statement.executeQuery(query);
+
+//            System.out.println("Candidates data");
+        Candidate candidate;
+
+        while (resultSet.next()) {
+            String name = resultSet.getString("Name");
+
+//                System.out.println("Candidate ID: " + canID + " name: " + name + " pid: " + pid + " conID: " + conID + " gender " + gender + " votes: " + votes);
+            constituencyNames.add(name);
+        }
+
+        return constituencyNames;
     }
 
     public Model getModel(){

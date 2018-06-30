@@ -62,24 +62,15 @@ public class CurrentCandidate {
         toRemove =true;
     }
 
-    public void setInfo(int round, boolean finalRound){
+    public void setInfo(int round){
         if (toRemove)
             removed = true;
 
-        if (rounds.get(round).getStatus().equals("Elected"))
+        if (rounds.get(round).getStatus().equals("Elected") || rounds.get(round + 1).getStatus().equals("Excluded"))
             toRemove = true;
 
-        if (!finalRound)
-            if(rounds.get(round + 1).getStatus().equals("Excluded"))
-                toRemove = true;
-
-        if (finalRound){
-            currentVotes = rounds.get(round).getVotes();
-        }
-        else {
-            currentVotes = rounds.get(round).getVotes();
-            nextVotes = rounds.get(round + 1).getVotes();
-        }
+        currentVotes = rounds.get(round).getVotes();
+        nextVotes = rounds.get(round + 1).getVotes();
     }
 
     public void setElected(boolean elected){

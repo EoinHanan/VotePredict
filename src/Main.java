@@ -7,22 +7,28 @@ import Reader.PartyReader;
 import Reader.RoundReader;
 
 import java.io.FileNotFoundException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Main {
-    public static void main(String args[]) throws FileNotFoundException {
+    public static void main(String args[]) throws FileNotFoundException, SQLException {
 //        createDatabase();
         readDatabase();
     }
 
-    private static void readDatabase() throws FileNotFoundException {
+    private static void readDatabase() throws FileNotFoundException, SQLException {
         DBReader reader = new DBReader();
-        reader.readConstituency("Wicklow");
-        Model model = reader.getModel();
+
+        ArrayList <String> constituencyNames = reader.getConstituencyNames();
+
+        for (int i =0; i < constituencyNames.size();i++) {
+            reader.readConstituency(constituencyNames.get(i));
+            Model model = reader.getModel();
 //        System.out.println("Getting this far");
 //        model.printAll();
-        model.calculateTransfers();
+            model.calculateTransfers();
 //        model.printAll();
+        }
     }
 
     public static void createDatabase()throws FileNotFoundException{
@@ -53,10 +59,10 @@ public class Main {
 //        System.out.println("Parties");
 //        connector.writeParties(parties);
 //        System.out.println("Candidates");
-//        connector.writeCandidates(candidates);
+        connector.writeCandidates(candidates);
 //        System.out.println("Constituencies");
 //        connector.writeConstituencies(constituencies);
-        System.out.println("Rounds");
+//        System.out.println("Rounds");
         connector.writeRounds(rounds);
 
         System.out.print("About to end.");

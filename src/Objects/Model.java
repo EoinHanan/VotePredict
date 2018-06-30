@@ -17,7 +17,7 @@ public class Model{
         this.constituency = constituency;
         candidates = new ArrayList<Candidate>();
         quota = (int)(Math.ceil((constituency.getPoll2016() - constituency.getSpoiled2016()) / (constituency.getSeats() + 1)) + 1);
-        System.out.println("Quota is " + quota);
+        System.out.println("Checking " + constituency.getName() + " Quota is " + quota);
     }
 
     public void addCandidate(Candidate candidate){
@@ -50,12 +50,9 @@ public class Model{
     }
 
     public void calculateTransfers() throws FileNotFoundException {
-        //Setup
-
         //Setup up rounds
         int round = 0;
         int totalRounds = candidates.get(0).getRounds().size();
-        boolean finalRound = false;
 
         createTransfers();
 
@@ -73,12 +70,13 @@ public class Model{
         ArrayList <CurrentCandidate> transferTo;
         //Set up transfers
 
-        while (round != totalRounds){
-            if (round== totalRounds - 2)
-                finalRound = true;
+        while (round != totalRounds - 1){
+
             // Set up for  round
-            for (int i =0;  i < currentCandidates.size();i++)
-                currentCandidates.get(i).setInfo(round, finalRound);
+            for (int i =0;  i < currentCandidates.size();i++) {
+                System.out.println("Checking " + currentCandidates.get(i).getName());
+                currentCandidates.get(i).setInfo(round);
+            }
 
             System.out.println("\nStarting round " + (round + 1));
 
@@ -113,8 +111,8 @@ public class Model{
         //Print Transfers
         printTransfers();
 
-//        CSVPrinter printer = new CSVPrinter (transfers, candidates,constituency.getName());
-//        printer.print();
+        CSVPrinter printer = new CSVPrinter (transfers, candidates,constituency.getName());
+        printer.print();
 
     }
 

@@ -26,11 +26,11 @@ public class PartyReader extends Reader {
         if (file.exists()) {
             //System.out.println("Inside file");
             in = new Scanner(file);
-            in.useDelimiter(";");
+            in.useDelimiter(",");
             int i =0;
             while (in.hasNextLine()){
                 line = in.nextLine();
-                elements = line.split(";");
+                elements = line.split(",");
                 parties.add(new Party(i,elements[0],elements[1]));
                 i++;
                 //System.out.println(line);
