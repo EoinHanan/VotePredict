@@ -5,6 +5,11 @@ public class Party {
     private int pid;
     private String abbreviation;
 
+    public Party(int pid, String name)
+    {
+        this.name = name;
+        this.pid = pid;
+    }
     public Party(int pid, String name, String abbreviation)
     {
         this.name = name;

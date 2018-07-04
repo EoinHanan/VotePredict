@@ -56,8 +56,8 @@ public class Model{
 
         createTransfers();
 
-        System.out.println("There are " + candidates.size() + " Candidates");
-        System.out.println("There are " + totalRounds + " rounds");
+//        System.out.println("There are " + candidates.size() + " Candidates");
+//        System.out.println("There are " + totalRounds + " rounds");
 
         //Set up Current Candidates
         currentCandidates = new ArrayList<>();
@@ -74,11 +74,11 @@ public class Model{
 
             // Set up for  round
             for (int i =0;  i < currentCandidates.size();i++) {
-                System.out.println("Checking " + currentCandidates.get(i).getName());
-                currentCandidates.get(i).setInfo(round);
+//                System.out.println("Checking " + currentCandidates.get(i).getName());
+                currentCandidates.get(i).setInfo(round, quota);
             }
 
-            System.out.println("\nStarting round " + (round + 1));
+//            System.out.println("\nStarting round " + (round + 1));
 
             transferFrom = new ArrayList<>();
             transferTo = new ArrayList<>();
@@ -89,7 +89,7 @@ public class Model{
 //            }
 
 
-            //Make an arraylist of candidates that will be removed
+            //Make an arraylist of candidates that will be removed and a an arraylist of what to remove
             for (int i =0; i < currentCandidates.size(); i++){
                 if (currentCandidates.get(i).willBeRemoved() && !currentCandidates.get(i).isRemoved())
                    transferFrom.add(currentCandidates.get(i));
@@ -109,11 +109,10 @@ public class Model{
         }
 
         //Print Transfers
-        printTransfers();
+//        printTransfers();
 
-        CSVPrinter printer = new CSVPrinter (transfers, candidates,constituency.getName());
-        printer.print();
-
+//        CSVPrinter printer = new CSVPrinter (transfers, candidates,constituency.getName());
+//        printer.print();
     }
 
     private void createTransfers() {
@@ -154,7 +153,6 @@ public class Model{
                 percentage = Math.round(percentage * 100) ;
 
                 transfers[candidatesToRedistribute.get(i).getPosition()][currentCandidates.get(j).getPosition()].setPercentage(percentage);
-
             }
         }
     }
@@ -173,7 +171,7 @@ public class Model{
         double redistribution = 0;
         double difference[] = new double [to.size()];
 
-        System.out.println("There are " + from.size() + " candidates transferring and there are " + to.size() + " candidates left");
+//        System.out.println("There are " + from.size() + " candidates transferring and there are " + to.size() + " candidates left");
 
         for (int i =0; i < from.size(); i++) {
             if (from.get(i).wasElected())
@@ -182,19 +180,21 @@ public class Model{
                 redistribution += from.get(i).getCurrentVotes();
         }
 
-        System.out.println("Redistribution = " + redistribution);
+//        System.out.println("Redistribution = " + redistribution);
 
-        System.out.println("Transfers is a " + transfers.length + " * " + transfers[0].length);
+//        System.out.println("Transfers is a " + transfers.length + " * " + transfers[0].length);
 
         for (int i = 0; i < to.size();i++ ) {
             difference[i] = to.get(i).getNextVotes() - to.get(i).getCurrentVotes();
-            System.out.println("Difference is " + difference[i]);
+//            System.out.println("Difference is " + difference[i]);
         }
 
         for (int i =0 ; i < from.size(); i++) {
             for (int j = 0; j < to.size(); j++) {
-                System.out.println("From: " + from.get(i).getPosition() + " To: " + to.get(j).getPosition() + " with the difference " + (difference[j]/redistribution));
+//                System.out.println("From: " + from.get(i).getPosition() + " To: " + to.get(j).getPosition() + " with the difference " + (difference[j]/redistribution));
                 transfers[from.get(i).getPosition()][to.get(j).getPosition()].setPercentage(difference[j]/redistribution);
+                transfers[from.get(i).getPosition()][to.get(j).getPosition()].setWeight(from.size());
+                transfers[from.get(i).getPosition()][to.get(j).getPosition()].setOptions(to.size());
             }
         }
 
@@ -206,4 +206,14 @@ public class Model{
         number = number /10;
         return number;
     }
-}
+
+    public ArrayList<Transfer> getTransfers(){
+        ArrayList<Transfer> transfers = new ArrayList<>();
+
+        for (int i =0; i < this.transfers.length;i++)
+            for (int j =0; j < this.transfers[i].length;j++)
+                transfers.add(this.transfers[i][j]);
+
+        return transfers;
+    }
+ }

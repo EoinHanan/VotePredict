@@ -1,9 +1,6 @@
 package Database;
 
-import Objects.Candidate;
-import Objects.Constituency;
-import Objects.Party;
-import Objects.Round;
+import Objects.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -52,6 +49,13 @@ public class DBConnector {
         for (int i =0;i < rounds.size();i++)
         {
             write(rounds.get(i));
+        }
+    }
+    public void writeTransfers(ArrayList<Transfer> transfers){
+        for (int i =0;i < transfers.size();i++)
+        {
+            if (transfers.get(i).getFromCanID()!=transfers.get(i).getToCanID())
+            write(transfers.get(i));
         }
     }
 
@@ -124,6 +128,22 @@ public class DBConnector {
             pstmt.setInt(3, round.getVotes());
             pstmt.setInt(4, round.getNumber());
             pstmt.setString(5, round.getStatus());
+
+            pstmt.executeUpdate();
+
+        }catch (Exception ex){
+            System.out.println("Error: " + ex);
+        }
+    }
+    private void write(Transfer transfer){
+        try{
+            PreparedStatement pstmt = connection.prepareStatement("INSERT INTO `transfers` (`transferID`, `fromCanID`, `toCanID`, `percentage`, `found`, `weight`, `options`) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
+            pstmt.setInt(1, transfer.getFromCanID());
+            pstmt.setInt(2, transfer.getToCanID());
+            pstmt.setDouble(3, transfer.getPercentage());
+            pstmt.setInt(4, transfer.isFound()? 1 : 0);
+            pstmt.setInt(5, transfer.getWeight());
+            pstmt.setInt(6, transfer.getOptions());
 
             pstmt.executeUpdate();
 

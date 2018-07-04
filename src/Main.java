@@ -1,5 +1,4 @@
-import Database.DBConnector;
-import Database.DBReader;
+import Database.*;
 import Objects.*;
 import Reader.CandidateReader;
 import Reader.ConstituencyReader;
@@ -13,11 +12,29 @@ import java.util.ArrayList;
 public class Main {
     public static void main(String args[]) throws FileNotFoundException, SQLException {
 //        createDatabase();
-        readDatabase();
+//        readDatabase();
+        readTransfers();
     }
+
+    private static void readTransfers() throws FileNotFoundException {
+        DBTransfersReader tReader = new DBTransfersReader();
+        ArrayList<Transfer> transfers = tReader.getTransfers();
+
+        DBCandidateReader cReader = new DBCandidateReader();
+        ArrayList<Candidate> candidates = cReader.getCandidates();
+
+        DBPartyReader pReader = new DBPartyReader();
+        ArrayList<Party> parties= pReader.getParties();
+
+        TransferSorter transferSorter = new TransferSorter(transfers, parties, candidates);
+//        transferSorter.printAll();
+        transferSorter.sort();
+    }
+
 
     private static void readDatabase() throws FileNotFoundException, SQLException {
         DBReader reader = new DBReader();
+        DBConnector connector = new DBConnector();
 
         ArrayList <String> constituencyNames = reader.getConstituencyNames();
 
@@ -28,6 +45,10 @@ public class Main {
 //        model.printAll();
             model.calculateTransfers();
 //        model.printAll();
+
+            connector.writeTransfers(model.getTransfers());
+//);
+
         }
     }
 
